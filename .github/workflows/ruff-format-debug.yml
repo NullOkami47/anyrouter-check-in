@@ -1,0 +1,20 @@
+name: Temporary Ruff Format Diff
+
+on:
+  push:
+    branches: [fix/agentrouter-waf-retry]
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
+        with:
+          version: "latest"
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - run: uv sync --dev --frozen
+      - name: Show Ruff formatting diff
+        run: uv run ruff format --diff reliable_checkin.py
