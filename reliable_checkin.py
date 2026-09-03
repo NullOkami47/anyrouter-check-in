@@ -68,7 +68,7 @@ async def _controller_get(group: str) -> dict[str, Any] | None:
 	control_url = os.getenv('CHECKIN_PROXY_CONTROL_URL', '').rstrip('/')
 	if not control_url:
 		return None
-	url = f'{control_url}/proxies/{quote(group, safe="")}'
+	url = f"{control_url}/proxies/{quote(group, safe='')}"
 	async with httpx.AsyncClient(timeout=10) as client:
 		response = await client.get(url)
 		if response.status_code != 200:
@@ -81,7 +81,7 @@ async def _controller_select(group: str, node: str) -> bool:
 	control_url = os.getenv('CHECKIN_PROXY_CONTROL_URL', '').rstrip('/')
 	if not control_url:
 		return False
-	url = f'{control_url}/proxies/{quote(group, safe="")}'
+	url = f"{control_url}/proxies/{quote(group, safe='')}"
 	async with httpx.AsyncClient(timeout=10) as client:
 		response = await client.put(url, json={'name': node})
 		return response.status_code in {200, 204}
