@@ -5,6 +5,7 @@
 #   PROXY_TEST_URL          探测目标，默认 https://www.google.com/generate_204
 #   PROXY_REQUIRED          true 时探测失败则退出 1
 #   PROXY_PORT              本地 mixed-port，默认 7890
+#   PROXY_CONTROL_PORT      本地 controller 端口，默认 9090
 
 set -euo pipefail
 
@@ -15,6 +16,7 @@ fi
 
 PROXY_DIR="${RUNNER_TEMP:-/tmp}/checkin-proxy"
 PROXY_PORT="${PROXY_PORT:-7890}"
+PROXY_CONTROL_PORT="${PROXY_CONTROL_PORT:-9090}"
 PROXY_TEST_URL="${PROXY_TEST_URL:-https://www.google.com/generate_204}"
 MIHOMO_VERSION="${MIHOMO_VERSION:-v1.19.0}"
 PROXY_REQUIRED="${PROXY_REQUIRED:-false}"
@@ -38,6 +40,7 @@ MIHOMO_BIN="${PROXY_DIR}/mihomo-linux-amd64-${MIHOMO_VERSION}"
 
 cat > config.yaml <<EOF
 mixed-port: ${PROXY_PORT}
+external-controller: 127.0.0.1:${PROXY_CONTROL_PORT}
 allow-lan: false
 ipv6: false
 mode: rule
@@ -56,12 +59,18 @@ proxy-providers:
       url: https://www.gstatic.com/generate_204
 
 proxy-groups:
-  - name: CHECKIN
+  - name: CHECKIN-AUTO
     type: url-test
     url: "${PROXY_TEST_URL}"
     interval: 300
     tolerance: 150
     lazy: false
+    use:
+      - subscription
+  - name: CHECKIN
+    type: select
+    proxies:
+      - CHECKIN-AUTO
     use:
       - subscription
 
@@ -100,4 +109,7 @@ echo "[SUCCESS] Proxy is ready: ${PROXY_URL}"
 echo "[INFO] Proxy is scoped to CHECKIN_PROXY_URL (browser/python only, not global HTTP_PROXY)"
 if [[ -n "${GITHUB_ENV:-}" ]]; then
 	echo "CHECKIN_PROXY_URL=${PROXY_URL}" >> "${GITHUB_ENV}"
+	echo "CHECKIN_PROXY_CONTROL_URL=http://127.0.0.1:${PROXY_CONTROL_PORT}" >> "${GITHUB_ENV}"
+	echo "CHECKIN_PROXY_GROUP=CHECKIN" >> "${GITHUB_ENV}"
+	echo "CHECKIN_PROXY_AUTO_GROUP=CHECKIN-AUTO" >> "${GITHUB_ENV}"
 fi

@@ -114,7 +114,7 @@ jobs:
         BARK_KEY: ${{ secrets.BARK_KEY }}
         BARK_SERVER: ${{ secrets.BARK_SERVER }}
       run: |
-        xvfb-run -a --server-args="-screen 0 1920x1080x24" uv run checkin.py
+        xvfb-run -a --server-args="-screen 0 1920x1080x24" uv run reliable_checkin.py
 
     - name: 上传调试截图
       if: always() && env.DEBUG_MODE == 'true'
